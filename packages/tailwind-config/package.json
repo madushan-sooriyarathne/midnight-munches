@@ -1,0 +1,15 @@
+{
+  "name": "@midnightmunches/tailwind-config",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "files": [
+    "base.css"
+  ],
+  "exports": {
+    "./base.css": "./base.css"
+  },
+  "peerDependencies": {
+    "tailwindcss": "^4.0.0"
+  }
+}

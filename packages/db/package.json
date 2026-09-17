@@ -1,0 +1,23 @@
+{
+  "name": "@midnightmunches/db",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@midnightmunches/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@midnightmunches/tsconfig": "workspace:*",
+    "typescript": "^5.7.0"
+  }
+}
