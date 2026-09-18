@@ -8,16 +8,22 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./time": {
+      "types": "./src/time.ts",
+      "default": "./src/time.ts"
     }
   },
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
   },
   "dependencies": {
     "zod": "^4.0.0"
   },
   "devDependencies": {
     "@midnightmunches/tsconfig": "workspace:*",
+    "@types/bun": "^1.4.2",
     "typescript": "^5.7.0"
   }
 }

@@ -1,5 +1,8 @@
 {
   "extends": "@midnightmunches/tsconfig/library.json",
+  "compilerOptions": {
+    "types": ["bun"]
+  },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
