@@ -8,28 +8,68 @@ on:
 
 permissions:
   contents: read
-  packages: write
+
+# NOTE: PRs never push or deploy, so these only matter for main (production) and staging.
+env:
+  TAG: ${{ github.ref_name == 'main' && 'latest' || 'staging' }}
+  # Secrets: <APP>_DOKPLOY_WEBHOOK_URL (main), <APP>_STAGING_DOKPLOY_WEBHOOK_URL (staging).
+  WEBHOOK_SUFFIX: ${{ github.ref_name == 'main' && '_DOKPLOY_WEBHOOK_URL' || '_STAGING_DOKPLOY_WEBHOOK_URL' }}
 
 jobs:
-  image:
+  changes:
     runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.affected.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - run: bun install --frozen-lockfile
+
+      # NOTE: turbo follows workspace deps, so a packages/* change marks every app that uses it.
+      # An unknown base (new branch, force-push) makes turbo treat everything as changed.
+      - id: affected
+        env:
+          TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          bunx turbo ls --affected --output=json > affected.json
+          apps=$(jq -c '[.packages.items[].path | select(startswith("apps/")) | ltrimstr("apps/") | {app: ., webhook: (ascii_upcase + env.WEBHOOK_SUFFIX)}]' affected.json)
+          echo "apps=$apps" >> "$GITHUB_OUTPUT"
+
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run check-types
+
+      # `biome check` fails on lint and format issues alike.
+      - run: bun run lint
+
+  build:
+    needs: [changes, check]
+    if: needs.changes.outputs.apps != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - app: web
-            webhook: WEB_DOKPLOY_WEBHOOK_URL
-            staging_webhook: WEB_STAGING_DOKPLOY_WEBHOOK_URL
-          - app: dashboard
-            webhook: DASHBOARD_DOKPLOY_WEBHOOK_URL
-            staging_webhook: DASHBOARD_STAGING_DOKPLOY_WEBHOOK_URL
-          - app: api
-            webhook: API_DOKPLOY_WEBHOOK_URL
-            staging_webhook: API_STAGING_DOKPLOY_WEBHOOK_URL
+        include: ${{ fromJSON(needs.changes.outputs.apps) }}
     env:
       IMAGE: ghcr.io/${{ github.repository }}-${{ matrix.app }}
-      # NOTE: PRs never push, so TAG only matters for main (latest) and staging.
-      TAG: ${{ github.ref_name == 'main' && 'latest' || 'staging' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -53,13 +93,23 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.app }}
           cache-to: type=gha,mode=max,scope=${{ matrix.app }}
 
+  deploy:
+    needs: [changes, build]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.changes.outputs.apps) }}
+    env:
+      IMAGE: ghcr.io/${{ github.repository }}-${{ matrix.app }}
+    steps:
       # NOTE: Dokploy deploys Docker-image apps only for a GitHub `registry_package` payload whose
       # image + tag match the app's config. Anything else gets a 301, which `curl -f` treats as success,
       # so the status is checked explicitly.
       - name: Trigger Dokploy deploy
-        if: github.event_name == 'push'
         env:
-          WEBHOOK_URL: ${{ secrets[github.ref_name == 'main' && matrix.webhook || matrix.staging_webhook] }}
+          WEBHOOK_URL: ${{ secrets[matrix.webhook] }}
         run: |
           status=$(curl -sS -o response.txt -w '%{http_code}' -X POST "$WEBHOOK_URL" \
             -H 'Content-Type: application/json' \
