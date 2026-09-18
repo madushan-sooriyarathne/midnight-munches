@@ -8,16 +8,33 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "default": "./src/client.ts"
+    },
+    "./permissions": {
+      "types": "./src/permissions.ts",
+      "default": "./src/permissions.ts"
     }
   },
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
   },
   "dependencies": {
-    "@midnightmunches/types": "workspace:*"
+    "@midnightmunches/db": "workspace:*",
+    "better-auth": "^1.7.5",
+    "zod": "^4.0.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@midnightmunches/tsconfig": "workspace:*",
+    "@types/bun": "^1.4.2",
+    "@types/react": "^19.3.0",
     "typescript": "^5.7.0"
   }
 }
