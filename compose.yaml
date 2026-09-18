@@ -1,5 +1,5 @@
 # Local dev stack. `docker compose up` for everything, `docker compose up <service>` for one.
-# Credentials match packages/db/.env.example so host-side `bun run db:migrate` works unchanged.
+# Credentials match .env.example so host-side `bun run db:migrate` works unchanged.
 services:
   postgres:
     image: postgres:17-alpine

@@ -5,7 +5,6 @@ node_modules
 **/.next
 dist
 **/dist
-.env
-**/.env
-.env.local
-**/.env.local
+# Every env file carries secrets; only the template is committed.
+.env*
+!.env.example

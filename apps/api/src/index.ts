@@ -1,3 +1,4 @@
+import { env } from '@midnightmunches/env/server';
 import { healthResponseSchema } from '@midnightmunches/types';
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
@@ -18,10 +19,8 @@ app.get('/healthz', (c) => {
 
 app.notFound((c) => c.json({ error: 'not_found' }, 404));
 
-const port = Number(Bun.env.PORT ?? 4000);
-
 export default {
-  port,
+  port: env.PORT,
   fetch: app.fetch,
 };
 

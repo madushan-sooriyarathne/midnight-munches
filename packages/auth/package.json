@@ -24,8 +24,8 @@
   },
   "dependencies": {
     "@midnightmunches/db": "workspace:*",
-    "better-auth": "^1.7.5",
-    "zod": "^4.0.0"
+    "@midnightmunches/env": "workspace:*",
+    "better-auth": "^1.7.5"
   },
   "peerDependencies": {
     "react": "^19.0.0",

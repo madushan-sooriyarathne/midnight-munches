@@ -3,5 +3,4 @@
 **/dist
 **/.turbo
 .git
-**/.env
-**/.env.local
+**/.env*

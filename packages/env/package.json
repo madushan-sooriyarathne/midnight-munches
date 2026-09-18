@@ -1,0 +1,39 @@
+{
+  "name": "@midnightmunches/env",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    "./load": {
+      "types": "./src/load.ts",
+      "default": "./src/load.ts"
+    },
+    "./db": {
+      "types": "./src/db.ts",
+      "default": "./src/db.ts"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "default": "./src/server.ts"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "default": "./src/client.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@t3-oss/env-core": "^0.13.11",
+    "@t3-oss/env-nextjs": "^0.13.11",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@midnightmunches/tsconfig": "workspace:*",
+    "@types/bun": "^1.4.2",
+    "typescript": "^5.7.0"
+  }
+}
