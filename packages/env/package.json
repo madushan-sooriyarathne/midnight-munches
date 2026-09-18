@@ -17,6 +17,10 @@
       "types": "./src/server.ts",
       "default": "./src/server.ts"
     },
+    "./auth": {
+      "types": "./src/auth.ts",
+      "default": "./src/auth.ts"
+    },
     "./client": {
       "types": "./src/client.ts",
       "default": "./src/client.ts"

@@ -1,5 +1,5 @@
 import { account, db, session, user, verification } from '@midnightmunches/db';
-import { env } from '@midnightmunches/env/server';
+import { env } from '@midnightmunches/env/auth';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { APIError } from 'better-auth/api';
