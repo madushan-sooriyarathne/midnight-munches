@@ -2,9 +2,9 @@
 
 import { ChevronRight, MapPin } from 'lucide-react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
-import { cn } from '../../cn';
+import { type ButtonVariant, getButtonClassName } from './get-button-class-name';
 
-export type ButtonVariant = 'primary' | 'ghost' | 'location';
+export type { ButtonVariant };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -12,16 +12,6 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: ReactNode;
   iconPosition?: 'left' | 'right';
 }
-
-/* Flat by design: colour contrast carries hierarchy, never elevation. */
-const base =
-  'inline-flex items-center justify-center gap-[6px] rounded-buttons px-[14px] py-[10px] font-body text-body-sm leading-[18px] font-medium tracking-body-sm uppercase transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bone-white disabled:cursor-not-allowed disabled:opacity-50';
-
-const variants: Record<ButtonVariant, string> = {
-  primary: 'bg-electric-red text-bone-white hover:bg-electric-red/90',
-  ghost: 'border border-bone-white bg-transparent text-bone-white hover:bg-bone-white/10',
-  location: 'border border-bone-white bg-transparent text-bone-white hover:bg-bone-white/10',
-};
 
 const defaultIcons: Record<ButtonVariant, ReactNode> = {
   primary: <ChevronRight aria-hidden="true" className="size-[14px]" strokeWidth={2} />,
@@ -48,7 +38,7 @@ export function Button({
   const position = iconPosition ?? defaultIconPositions[variant];
 
   return (
-    <button className={cn(base, variants[variant], className)} type={type} {...props}>
+    <button className={getButtonClassName(variant, className)} type={type} {...props}>
       {position === 'left' ? glyph : null}
       {children}
       {position === 'right' ? glyph : null}
