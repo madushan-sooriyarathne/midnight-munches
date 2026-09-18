@@ -2,7 +2,7 @@ import { afterAll, expect, test } from 'bun:test';
 
 import { hasRole, isAdmin, isModeratorOrAdmin } from './permissions';
 
-// Needs a migrated local Postgres and DATABASE_URL set (see packages/db/.env.example).
+// Needs a migrated local Postgres and DATABASE_URL set (see the root .env.example).
 process.env.BETTER_AUTH_SECRET ??= `${crypto.randomUUID()}${crypto.randomUUID()}`;
 process.env.BETTER_AUTH_URL ??= 'http://localhost:4000';
 process.env.TRUSTED_ORIGINS ??= 'http://localhost:3000';

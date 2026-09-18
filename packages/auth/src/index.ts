@@ -1,26 +1,12 @@
 import { account, db, session, user, verification } from '@midnightmunches/db';
+import { env } from '@midnightmunches/env/auth';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { APIError } from 'better-auth/api';
 import { admin } from 'better-auth/plugins';
-import { z } from 'zod';
 
 import { hasRole, roles, type UserRole } from './permissions';
 import type { AuthSession } from './types';
-
-const env = z
-  .object({
-    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-    BETTER_AUTH_SECRET: z.string().min(32),
-    BETTER_AUTH_URL: z.url(),
-    TRUSTED_ORIGINS: z
-      .string()
-      .transform((value) => value.split(',').map((origin) => origin.trim()))
-      .pipe(z.array(z.url())),
-    GOOGLE_CLIENT_ID: z.string().min(1),
-    GOOGLE_CLIENT_SECRET: z.string().min(1),
-  })
-  .parse(process.env);
 
 const isProduction = env.NODE_ENV === 'production';
 

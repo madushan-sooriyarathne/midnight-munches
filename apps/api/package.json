@@ -14,6 +14,7 @@
   "dependencies": {
     "@midnightmunches/auth": "workspace:*",
     "@midnightmunches/db": "workspace:*",
+    "@midnightmunches/env": "workspace:*",
     "@midnightmunches/types": "workspace:*",
     "hono": "^4.6.0"
   },

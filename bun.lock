@@ -16,6 +16,7 @@
       "dependencies": {
         "@midnightmunches/auth": "workspace:*",
         "@midnightmunches/db": "workspace:*",
+        "@midnightmunches/env": "workspace:*",
         "@midnightmunches/types": "workspace:*",
         "hono": "^4.6.0",
       },
@@ -29,6 +30,7 @@
       "name": "@midnightmunches/dashboard",
       "version": "0.0.0",
       "dependencies": {
+        "@midnightmunches/env": "workspace:*",
         "@midnightmunches/tailwind-config": "workspace:*",
         "@midnightmunches/types": "workspace:*",
         "@midnightmunches/ui": "workspace:*",
@@ -50,6 +52,7 @@
       "name": "@midnightmunches/web",
       "version": "0.0.0",
       "dependencies": {
+        "@midnightmunches/env": "workspace:*",
         "@midnightmunches/tailwind-config": "workspace:*",
         "@midnightmunches/types": "workspace:*",
         "@midnightmunches/ui": "workspace:*",
@@ -72,8 +75,8 @@
       "version": "0.0.0",
       "dependencies": {
         "@midnightmunches/db": "workspace:*",
+        "@midnightmunches/env": "workspace:*",
         "better-auth": "^1.7.5",
-        "zod": "^4",
       },
       "devDependencies": {
         "@midnightmunches/tsconfig": "workspace:*",
@@ -90,6 +93,7 @@
       "name": "@midnightmunches/db",
       "version": "0.0.0",
       "dependencies": {
+        "@midnightmunches/env": "workspace:*",
         "@midnightmunches/types": "workspace:*",
         "drizzle-orm": "^0.45.2",
         "postgres": "^3.4.9",
@@ -97,8 +101,21 @@
       "devDependencies": {
         "@midnightmunches/tsconfig": "workspace:*",
         "@types/node": "^26.6.1",
-        "dotenv": "^18.0.0",
         "drizzle-kit": "^0.31.10",
+        "typescript": "^5.7.0",
+      },
+    },
+    "packages/env": {
+      "name": "@midnightmunches/env",
+      "version": "0.0.0",
+      "dependencies": {
+        "@t3-oss/env-core": "^0.13.11",
+        "@t3-oss/env-nextjs": "^0.13.11",
+        "zod": "^4.0.0",
+      },
+      "devDependencies": {
+        "@midnightmunches/tsconfig": "workspace:*",
+        "@types/bun": "^1.4.2",
         "typescript": "^5.7.0",
       },
     },
@@ -319,6 +336,8 @@
 
     "@midnightmunches/db": ["@midnightmunches/db@workspace:packages/db"],
 
+    "@midnightmunches/env": ["@midnightmunches/env@workspace:packages/env"],
+
     "@midnightmunches/tailwind-config": ["@midnightmunches/tailwind-config@workspace:packages/tailwind-config"],
 
     "@midnightmunches/tsconfig": ["@midnightmunches/tsconfig@workspace:packages/tsconfig"],
@@ -356,6 +375,10 @@
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 
     "@swc/helpers": ["@swc/helpers@0.5.15", "", { "dependencies": { "tslib": "^2.8.0" } }, "sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g=="],
+
+    "@t3-oss/env-core": ["@t3-oss/env-core@0.13.11", "", { "peerDependencies": { "arktype": "^2.1.0", "typescript": ">=5.0.0", "valibot": "^1.0.0-beta.7 || ^1.0.0", "zod": "^3.24.0 || ^4.0.0" }, "optionalPeers": ["arktype", "typescript", "valibot", "zod"] }, "sha512-sM7GYY+KL7H/Hl0BE0inWfk3nRHZOLhmVn7sHGxaZt9FAR6KqREXAE+6TqKfiavfXmpRxO/OZ2QgKRd+oiBYRQ=="],
+
+    "@t3-oss/env-nextjs": ["@t3-oss/env-nextjs@0.13.11", "", { "dependencies": { "@t3-oss/env-core": "0.13.11" }, "peerDependencies": { "arktype": "^2.1.0", "typescript": ">=5.0.0", "valibot": "^1.0.0-beta.7 || ^1.0.0", "zod": "^3.24.0 || ^4.0.0" }, "optionalPeers": ["arktype", "typescript", "valibot", "zod"] }, "sha512-NC+3j7YWgpzdFu1t5y/8wqibTK0lm5RS4bjXA1n8uwik3wIR4iZM4Fa+U2BaMa5k3Qk8RZiYhoAIX0WogmGkzg=="],
 
     "@tailwindcss/node": ["@tailwindcss/node@4.3.3", "", { "dependencies": { "@jridgewell/remapping": "^2.3.5", "enhanced-resolve": "^5.24.1", "jiti": "^2.7.0", "lightningcss": "1.32.0", "magic-string": "^0.30.21", "source-map-js": "^1.2.1", "tailwindcss": "4.3.3" } }, "sha512-/T8IKEsf9VTU6tLjgC7+sv2mOPtQxzE2jMw7u4Tt40Tx+QSZxpzh95/H6cMKoja9XuW7iMdLJYBB0o9G1CaAgg=="],
 
@@ -426,8 +449,6 @@
     "defu": ["defu@6.1.7", "", {}, "sha512-7z22QmUWiQ/2d0KkdYmANbRUVABpZ9SNYyH5vx6PZ+nE5bcC0l7uFvEfHlyld/HcGBFTL536ClDt3DEcSlEJAQ=="],
 
     "detect-libc": ["detect-libc@2.1.2", "", {}, "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ=="],
-
-    "dotenv": ["dotenv@18.0.0", "", { "bin": { "dotenv": "dist/index.cjs" } }, "sha512-16YSUvsKtKbwrTbESvtTSZzzJUug6jdFdqiBFg9Q6Bk1JY9r0hAtrtTiWxdI9YrsgOTmkjZRdgU0n3LnwGpECw=="],
 
     "drizzle-kit": ["drizzle-kit@0.31.10", "", { "dependencies": { "@drizzle-team/brocli": "^0.10.2", "@esbuild-kit/esm-loader": "^2.5.5", "esbuild": "^0.25.4", "tsx": "^4.21.0" }, "bin": { "drizzle-kit": "bin.cjs" } }, "sha512-7OZcmQUrdGI+DUNNsKBn1aW8qSoKuTH7d0mYgSP8bAzdFzKoovxEFnoGQp2dVs82EOJeYycqRtciopszwUf8bw=="],
 

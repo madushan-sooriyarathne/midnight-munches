@@ -10,6 +10,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@midnightmunches/env": "workspace:*",
     "@midnightmunches/tailwind-config": "workspace:*",
     "@midnightmunches/types": "workspace:*",
     "@midnightmunches/ui": "workspace:*",
