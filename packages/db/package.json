@@ -8,16 +8,32 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./schema": {
+      "types": "./src/schema/index.ts",
+      "default": "./src/schema/index.ts"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "default": "./src/client.ts"
     }
   },
   "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@midnightmunches/types": "workspace:*"
+    "@midnightmunches/types": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.9"
   },
   "devDependencies": {
     "@midnightmunches/tsconfig": "workspace:*",
+    "@types/node": "^26.6.1",
+    "drizzle-kit": "^0.31.10",
+    "dotenv": "^18.0.0",
     "typescript": "^5.7.0"
   }
 }

@@ -1,0 +1,69 @@
+name: deploy
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: web
+            webhook: WEB_DOKPLOY_WEBHOOK_URL
+            staging_webhook: WEB_STAGING_DOKPLOY_WEBHOOK_URL
+          - app: dashboard
+            webhook: DASHBOARD_DOKPLOY_WEBHOOK_URL
+            staging_webhook: DASHBOARD_STAGING_DOKPLOY_WEBHOOK_URL
+          - app: api
+            webhook: API_DOKPLOY_WEBHOOK_URL
+            staging_webhook: API_STAGING_DOKPLOY_WEBHOOK_URL
+    env:
+      IMAGE: ghcr.io/${{ github.repository }}-${{ matrix.app }}
+      # NOTE: PRs never push, so TAG only matters for main (latest) and staging.
+      TAG: ${{ github.ref_name == 'main' && 'latest' || 'staging' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        if: github.event_name == 'push'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          push: ${{ github.event_name == 'push' }}
+          tags: |
+            ${{ env.IMAGE }}:${{ env.TAG }}
+            ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+
+      # NOTE: Dokploy deploys Docker-image apps only for a GitHub `registry_package` payload whose
+      # image + tag match the app's config. Anything else gets a 301, which `curl -f` treats as success,
+      # so the status is checked explicitly.
+      - name: Trigger Dokploy deploy
+        if: github.event_name == 'push'
+        env:
+          WEBHOOK_URL: ${{ secrets[github.ref_name == 'main' && matrix.webhook || matrix.staging_webhook] }}
+        run: |
+          status=$(curl -sS -o response.txt -w '%{http_code}' -X POST "$WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -H 'X-GitHub-Event: registry_package' \
+            -d "{\"registry_package\":{\"package_version\":{\"package_url\":\"$IMAGE:$TAG\"}}}")
+          cat response.txt
+          test "$status" = 200
