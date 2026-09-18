@@ -1,0 +1,61 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: web
+            webhook: WEB_DOKPLOY_WEBHOOK_URL
+          - app: dashboard
+            webhook: DASHBOARD_DOKPLOY_WEBHOOK_URL
+          - app: api
+            webhook: API_DOKPLOY_WEBHOOK_URL
+    env:
+      IMAGE: ghcr.io/${{ github.repository }}-${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+
+      # NOTE: Dokploy deploys Docker-image apps only for a GitHub `registry_package` payload whose
+      # image + tag match the app's config. Anything else gets a 301, which `curl -f` treats as success,
+      # so the status is checked explicitly.
+      - name: Trigger Dokploy deploy
+        env:
+          WEBHOOK_URL: ${{ secrets[matrix.webhook] }}
+        run: |
+          status=$(curl -sS -o response.txt -w '%{http_code}' -X POST "$WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -H 'X-GitHub-Event: registry_package' \
+            -d "{\"registry_package\":{\"package_version\":{\"package_url\":\"$IMAGE:latest\"}}}")
+          cat response.txt
+          test "$status" = 200
