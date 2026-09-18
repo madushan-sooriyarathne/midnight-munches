@@ -32,8 +32,8 @@ export const restaurants = pgTable('restaurants', {
   address: text('address').notNull(),
   // e.g. Colombo 03, Kandy, Galle
   district: varchar('district', { length: 64 }).notNull(),
-  latitude: numeric('latitude', { precision: 10, scale: 7 }).notNull(),
-  longitude: numeric('longitude', { precision: 10, scale: 7 }).notNull(),
+  latitude: numeric('latitude', { precision: 10, scale: 7, mode: 'number' }).notNull(),
+  longitude: numeric('longitude', { precision: 10, scale: 7, mode: 'number' }).notNull(),
   phone: varchar('phone', { length: 32 }),
   deliveryUrls: jsonb('delivery_urls').$type<DeliveryUrls>(),
   // e.g. Kottu, Burgers, Chai

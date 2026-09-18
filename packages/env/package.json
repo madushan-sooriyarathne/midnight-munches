@@ -21,6 +21,10 @@
       "types": "./src/auth.ts",
       "default": "./src/auth.ts"
     },
+    "./r2": {
+      "types": "./src/r2.ts",
+      "default": "./src/r2.ts"
+    },
     "./client": {
       "types": "./src/client.ts",
       "default": "./src/client.ts"
