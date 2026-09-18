@@ -3,8 +3,7 @@ import { z } from 'zod';
 
 import { env as serverEnv } from './server';
 
-// NOTE: split from `server.ts` so services that don't mount auth (e.g. api today) boot without
-// auth secrets.
+// NOTE: split from `server.ts` so services that don't mount auth boot without auth secrets.
 export const env = createEnv({
   extends: [serverEnv],
   server: {

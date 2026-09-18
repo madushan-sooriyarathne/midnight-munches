@@ -20,6 +20,10 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+    # Auth + R2 secrets; `environment` below wins, so DATABASE_URL still targets the compose host.
+    env_file:
+      - path: .env
+        required: false
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/midnightmunches
     ports:
