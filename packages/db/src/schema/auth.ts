@@ -12,6 +12,10 @@ export const user = pgTable('user', {
   image: text('image'),
   // user | moderator | admin
   role: varchar('role', { length: 32 }).default('user').notNull(),
+  // Required by the Better Auth admin plugin.
+  banned: boolean('banned').default(false),
+  banReason: text('ban_reason'),
+  banExpires: timestamp('ban_expires'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -25,6 +29,8 @@ export const session = pgTable('session', {
   expiresAt: timestamp('expires_at').notNull(),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
+  // Admin plugin: id of the admin impersonating this session.
+  impersonatedBy: text('impersonated_by'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
