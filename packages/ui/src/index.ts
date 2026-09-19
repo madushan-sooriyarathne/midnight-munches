@@ -5,7 +5,12 @@ export {
   StatusBadge,
   type StatusBadgeProps,
 } from './components/badge';
-export { Button, type ButtonProps, type ButtonVariant } from './components/button';
+export {
+  Button,
+  type ButtonProps,
+  type ButtonVariant,
+  getButtonClassName,
+} from './components/button';
 export {
   Card,
   CardContent,
