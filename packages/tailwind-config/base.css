@@ -9,11 +9,12 @@
   --color-butcher-black: #000000;
   --color-bone-white: #ffffff;
 
-  /* Fonts */
-  --font-display: 'Bebas Neue', cursive, sans-serif;
+  /* Fonts — NOTE: apps load these via next/font on <html>; the var() fallback keeps apps that don't
+     working with a locally installed face. */
+  --font-display: var(--font-bebas-neue, 'Bebas Neue'), cursive, sans-serif;
   --font-body:
-    'Hubot Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    sans-serif;
+    var(--font-hubot-sans, 'Hubot Sans'), ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Typography Scale */
   --text-caption: 10px;
@@ -44,7 +45,8 @@
   --leading-heading-lg: 0.75;
   --tracking-heading-lg: 0.03em;
 
-  --text-display: 160px;
+  /* NOTE: fluid so the hero headline fills phones without overflowing; caps at 231px (~925px viewport). */
+  --text-display: clamp(4.5rem, 25vw, 14.4375rem);
   --leading-display: 0.73;
   --tracking-display: 0.06em;
 

@@ -1,11 +1,14 @@
 import { requireRole } from '@midnightmunches/auth';
 import {
   db,
+  media as mediaTable,
   operatingHours,
   restaurantStatusEnum,
   restaurants,
   reviews,
 } from '@midnightmunches/db';
+import { env } from '@midnightmunches/env/r2';
+import { submissionSchema } from '@midnightmunches/types/submission';
 import { and, arrayContains, avg, count, eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { createMiddleware } from 'hono/factory';
@@ -21,33 +24,6 @@ const listQuerySchema = z.object({
   status: z.enum(restaurantStatusEnum.enumValues).default('approved'),
   limit: z.coerce.number().int().min(1).max(50).default(20),
   offset: z.coerce.number().int().min(0).default(0),
-});
-
-const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Expected HH:mm');
-// Rendered as links on the web app, so no javascript:/data: schemes.
-const linkSchema = z.url({ protocol: /^https?$/ }).optional();
-
-const submissionSchema = z.object({
-  name: z.string().trim().min(1).max(120),
-  address: z.string().trim().min(1).max(500),
-  district: z.string().trim().min(1).max(64),
-  latitude: z.number().min(-90).max(90),
-  longitude: z.number().min(-180).max(180),
-  phone: z.string().trim().min(1).max(32).optional(),
-  deliveryUrls: z
-    .object({ ubereats: linkSchema, pickme: linkSchema, direct: linkSchema })
-    .optional(),
-  foodTypes: z.array(z.string().trim().min(1).max(32)).min(1).max(10),
-  operatingHours: z
-    .array(
-      z.object({
-        dayOfWeek: z.number().int().min(0).max(6),
-        openTime: timeSchema,
-        closeTime: timeSchema,
-      }),
-    )
-    .min(1)
-    .max(14),
 });
 
 // Public callers only see approved stalls; the moderation queue needs a mod/admin session.
@@ -116,8 +92,18 @@ export const restaurantRoutes = new Hono()
     });
   })
   .post('/', requireSession(), validator('json', submissionSchema), async (c) => {
-    const { operatingHours: hours, ...input } = c.req.valid('json');
+    const { operatingHours: hours, media, ...input } = c.req.valid('json');
     const { user } = c.get('session');
+
+    // `new URL` resolves `..` and `%2e%2e` segments, so the prefix check can't be walked out of.
+    const uploadPrefix = new URL(`uploads/${user.id}/`, env.R2_PUBLIC_DOMAIN).href;
+    if (media.some(({ url }) => !new URL(url).href.startsWith(uploadPrefix))) {
+      throw new ApiError(
+        400,
+        'INVALID_MEDIA',
+        'Media must be uploaded through /api/upload/presign',
+      );
+    }
 
     const restaurant = await db.transaction(async (tx) => {
       const [created] = await tx
@@ -134,6 +120,14 @@ export const restaurantRoutes = new Hono()
           isOvernight: hour.closeTime < hour.openTime,
         })),
       );
+
+      // ponytail: URLs are trusted to point at finished uploads; HEAD each object if moderators
+      // start seeing broken images.
+      if (media.length) {
+        await tx
+          .insert(mediaTable)
+          .values(media.map((item) => ({ ...item, restaurantId: created.id })));
+      }
 
       return created;
     });

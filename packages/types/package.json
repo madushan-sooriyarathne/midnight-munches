@@ -12,6 +12,10 @@
     "./time": {
       "types": "./src/time.ts",
       "default": "./src/time.ts"
+    },
+    "./submission": {
+      "types": "./src/submission.ts",
+      "default": "./src/submission.ts"
     }
   },
   "scripts": {
