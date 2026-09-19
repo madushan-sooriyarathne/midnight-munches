@@ -122,10 +122,8 @@ test('submission is pending until approved', async () => {
   expect((await detail.json()).rating).toEqual({ average: null, count: 0 });
 });
 
-test('presign enforces type, size and ownership', async () => {
-  const [restaurant] = await client`select id from restaurants where district = ${district}`;
-  const restaurantId = z.uuid().parse(restaurant?.id);
-  const json = { restaurantId, type: 'cover', contentType: 'image/jpeg', size: 1024 } as const;
+test('presign enforces type and size, and scopes keys to the uploader', async () => {
+  const json = { type: 'cover', contentType: 'image/jpeg', size: 1024 } as const;
   const presign = api.upload.presign.$post;
 
   expect((await presign({ json })).status).toBe(401);
@@ -135,17 +133,49 @@ test('presign enforces type, size and ownership', async () => {
   expect((await presign({ json: { ...json, size: 6 * 1024 * 1024 } }, { headers })).status).toBe(
     400,
   );
-  const unknown = { json: { ...json, restaurantId: crypto.randomUUID() } };
-  expect((await presign(unknown, { headers })).status).toBe(404);
 
   const res = await presign({ json }, { headers });
   if (res.status !== 200) throw new Error(`expected 200, got ${res.status}`);
   const { uploadUrl, publicUrl, key } = await res.json();
 
-  expect(key).toMatch(new RegExp(`^restaurants/${restaurantId}/cover-[0-9a-f-]{36}\\.jpg$`));
+  expect(key).toMatch(new RegExp(`^uploads/${await getUserId()}/cover-[0-9a-f-]{36}\\.jpg$`));
   expect(publicUrl).toBe(new URL(key, process.env.R2_PUBLIC_DOMAIN).href);
   // Size and type are only enforced by R2 if they're part of the signature.
   const signedHeaders = new URL(uploadUrl).searchParams.get('X-Amz-SignedHeaders');
   expect(signedHeaders?.split(';')).toEqual(['content-length', 'content-type', 'host']);
   expect(uploadUrl).not.toContain('x-amz-checksum');
 });
+
+test('submission only accepts media the caller uploaded', async () => {
+  const json = { type: 'cover', contentType: 'image/png', size: 2048 } as const;
+  const res = await api.upload.presign.$post({ json }, { headers });
+  if (res.status !== 200) throw new Error(`expected 200, got ${res.status}`);
+  const { publicUrl } = await res.json();
+
+  const foreign = new URL('uploads/someone-else/cover-x.png', process.env.R2_PUBLIC_DOMAIN).href;
+  // Starts with the caller's prefix as a string, resolves outside it.
+  const escaped = `${publicUrl.slice(0, publicUrl.lastIndexOf('/'))}/../someone-else/cover-x.png`;
+  for (const url of [foreign, escaped, 'https://evil.example.com/cover.png']) {
+    const rejected = await postRaw('/api/restaurants', {
+      ...submission,
+      media: [{ type: 'cover', url }],
+    });
+    expect(rejected.status).toBe(400);
+    expect(await errorCode(rejected)).toBe('INVALID_MEDIA');
+  }
+
+  const created = await api.restaurants.$post(
+    { json: { ...submission, media: [{ type: 'cover', url: publicUrl }] } },
+    { headers },
+  );
+  if (created.status !== 201) throw new Error(`expected 201, got ${created.status}`);
+  const { id } = await created.json();
+
+  const rows = await client`select type, url from media where restaurant_id = ${id}`;
+  expect([...rows]).toEqual([{ type: 'cover', url: publicUrl }]);
+});
+
+async function getUserId() {
+  const [row] = await client`select id from "user" where email = ${email}`;
+  return z.string().parse(row?.id);
+}

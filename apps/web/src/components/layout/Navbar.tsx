@@ -10,7 +10,7 @@ const NAV_LINKS = [
 ] as const;
 
 const VENDOR_LINKS = [
-  { href: '/vendors', label: 'List your spot' },
+  { href: '/submit', label: 'List your spot' },
   { href: '/vendors/login', label: 'Vendor login' },
 ] as const;
 
